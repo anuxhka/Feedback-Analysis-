@@ -9,59 +9,55 @@ session_start();
 if(!isset($_SESSION['user_name'])){
   header('location:login.php');
 }
+function getAcademicYear() {
+  $currentYear = date('Y');
+  $nextYear = $currentYear + 1;
+  return $currentYear . '-' . $nextYear;
+}
+
+// ... your existing code
 
 if (isset($_POST['submit'])) {
   // Retrieve form data
   $name = $_POST['name'];
   $email = $_POST['email'];
-  $c1 = $_POST['curricular1'];
-  $c2 = $_POST['curricular2'];
-  $c3 = $_POST['curricular3'];
-  $c4 = $_POST['curricular4'];
-  
-  $t1 = $_POST['Teaching1'];
-  $t2 = $_POST['Teaching2'];
-  $t3 = $_POST['Teaching3'];
-  $t4 = $_POST['Teaching4'];
-  $t5 = $_POST['Teaching5'];
-  $t6 = $_POST['Teaching6'];
-  
-  $r1 = $_POST['Research1'];
-  $r2 = $_POST['Research2'];
-  $r3 = $_POST['Research3'];
-  $r4 = $_POST['Research4'];
-  
-  $i1 = $_POST['Infrastructure1'];
-  $i2 = $_POST['Infrastructure2'];
-  $i3 = $_POST['Infrastructure3'];
-  $i4 = $_POST['Infrastructure4'];
-  $i5 = $_POST['Infrastructure5'];
-  $i6 = $_POST['Infrastructure6'];
-  
-  $s1 = $_POST['Support1'];
-  $s2 = $_POST['Support2'];
-  $s3 = $_POST['Support3'];
-  $s4 = $_POST['Support4'];
-  $s5 = $_POST['Support5'];
-  $s6 = $_POST['Support6'];
-  
-  $g1 = $_POST['Governance1'];
-  $g2 = $_POST['Governance2'];
-  $g3 = $_POST['Governance3'];
-  
   $remarks = $_POST['remarks'];
 
-  // Add more variables for other form fields
+  // Create arrays to store feedback ratings
+  $curricularRatings = array();
+  $teachingRatings = array();
+  $researchRatings = array();
+  $infrastructureRatings = array();
+  $supportRatings = array();
+  $governanceRatings = array();
+
+  // Loop through the POST data to extract feedback ratings
+  foreach ($_POST as $key => $value) {
+    if (strpos($key, 'curricular') !== false) {
+      $curricularRatings[str_replace('curricular', '', $key)] = $value;
+    } elseif (strpos($key, 'teaching') !== false) {
+      $teachingRatings[str_replace('teaching', '', $key)] = $value;
+    } elseif (strpos($key, 'research') !== false) {
+      $researchRatings[str_replace('research', '', $key)] = $value;
+    } elseif (strpos($key, 'infrastructure') !== false) {
+      $infrastructureRatings[str_replace('infrastructure', '', $key)] = $value;
+    } elseif (strpos($key, 'support') !== false) {
+      $supportRatings[str_replace('support', '', $key)] = $value;
+    } elseif (strpos($key, 'governance') !== false) {
+      $governanceRatings[str_replace('governance', '', $key)] = $value;
+    }
+  }
 
   // Connect to the MySQL database
-  $conn = mysqli_connect('localhost','root','','data');
+  $conn = mysqli_connect('localhost', 'root', '', 'data');
   if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
   }
 
   // Prepare and execute the query to insert data into the table
-  $sql = "INSERT INTO student_feedback (email, name ,curricular1, curricular2, curricular3, curricular4, Teaching1, Teaching2, Teaching3, Teaching4, Teaching5, Teaching6, Research1, Research2, Research3, Research4, Infrastructure1, Infrastructure2, Infrastructure3, Infrastructure4, Infrastructure5, Infrastructure6, Support1, Support2, Support3, Support4 ,Support5, Support6, Governance1, Governance2, Governance3, remarks) VALUES ('$email','$name','$c1','$c2','$c3','$c4','$t1','$t2','$t3','$t4','$t5','$t6','$r1','$r2','$r3','$r4','$i1','$i2','$i3','$i4','$i5','$i6','$s1','$s2','$s3','$s4','$s5','$s6','$g1','$g2','$g3','$remarks')";
-  // Add more columns to the query based on your form fields
+  $sql = "INSERT INTO student_feedback (email, name,  curricular_ratings, teaching_ratings, research_ratings, infrastructure_ratings, support_ratings, governance_ratings,remarks) 
+          VALUES ('$email', '$name',  '" . json_encode($curricularRatings) . "', '" . json_encode($teachingRatings) . "', '" . json_encode($researchRatings) . "', 
+                  '" . json_encode($infrastructureRatings) . "', '" . json_encode($supportRatings) . "', '" . json_encode($governanceRatings) . "', '$remarks')";
 
   if (mysqli_query($conn, $sql)) {
     echo "Feedback submitted successfully!";
@@ -86,6 +82,7 @@ if (isset($_POST['submit'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Feedback Form</title>
   <style>
+    
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -226,7 +223,7 @@ if (isset($_POST['submit'])) {
    <!-- logo -->
   <div class="logo-container">
     <img src="chlogo.jpg" alt="logo">
-    <span class="academic-year">Academic Year: 2023-2024</span>
+    <span class="academic-year">Academic Year: <?php echo getAcademicYear(); ?></span>
     <!-- user logo name -->
     <div class="user-wrapper">
                 <img src="images.jpeg" width="30px" height="30px" alt="">
@@ -264,309 +261,257 @@ if (isset($_POST['submit'])) {
     </div>
     <!--################ CURRICULAR ASPECTS ################# -->
     <h2>Curricular Aspects *</h2>
-    <table>
-      <tr>
-        <th></th>
-        <th>Excellent</th>
-        <th>Very Good</th>
-        <th>Good</th>
-        <th>Average</th>
-        <th>Below Average</th>
-      </tr>
-      <tr>
-        <td>1)Curriculum developed and implemented has relevance to local, national, regional and global development needs.</td>
-        <td><input type="radio" name="curricular1" value="excellent" required></td>
-        <td><input type="radio" name="curricular1" value="very-good"></td>
-        <td><input type="radio" name="curricular1" value="good"></td>
-        <td><input type="radio" name="curricular1" value="average"></td>
-        <td><input type="radio" name="curricular1" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>2)Curriculum was broad enough to prepare you for career of choice.</td>
-        <td><input type="radio" name="curricular2" value="excellent"></td>
-        <td><input type="radio" name="curricular2" value="very-good"></td>
-        <td><input type="radio" name="curricular2" value="good"></td>
-        <td><input type="radio" name="curricular2" value="average"></td>
-        <td><input type="radio" name="curricular2" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>3)Curriculum integrates crosscutting issues relevant to professional ethics, gender, human values, environment and sustainability.</td>
-        <td><input type="radio" name="curricular3" value="excellent"></td>
-        <td><input type="radio" name="curricular3" value="very-good"></td>
-        <td><input type="radio" name="curricular3" value="good"></td>
-        <td><input type="radio" name="curricular3" value="average"></td>
-        <td><input type="radio" name="curricular3" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>4)The learning was supplemented by co-curricular activities such as coursework outside the curriculum, project work, internships, workshops, conference, symposia etc.</td>
-        <td><input type="radio" name="curricular4" value="excellent"></td>
-        <td><input type="radio" name="curricular4" value="very-good"></td>
-        <td><input type="radio" name="curricular4" value="good"></td>
-        <td><input type="radio" name="curricular4" value="average"></td>
-        <td><input type="radio" name="curricular4" value="below-average"></td>
-      </tr>
-    </table>
+    <?php 
+           include('config.php');
+           $sqlget = "SELECT * FROM addque ORDER BY category, id";
+           $sqldata = mysqli_query($conn,$sqlget) or die("error");
+
+           echo "<table>";
+           echo "<tr>
+           <th>No.</th>
+           <th>Questions</th> 
+           <th>Excellent</th>
+           <th>Very Good</th>
+           <th>Good</th>
+           <th>Average</th>
+           <th>Below Average</th></tr>";
+           $curricularCounter = 1;
+
+           while($row = mysqli_fetch_array($sqldata, MYSQLI_ASSOC)){
+            $category = $row['category'];
+          // -------------------------------------------------------------//
+            if ($category === 'carricular') {
+          // -------------------------------------------------------------//
+            
+            echo "<tr>";
+            echo "<td>"  .  $curricularCounter."</td>";
+            echo "<td>"  .$row['question']."</td>";
+
+            $radioName = 'curricular' . $row['id'];
+      
+      echo '<td><input type="radio" name="' . $radioName . '" value="excellent"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="very-good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="average"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="below-average"></td>';
+           
+            echo "</tr>";
+            $curricularCounter++;
+           }
+          }
+           echo "</table>";
+         ?>
     <!-- ################TEACHING-LEARNING################ -->
     <h2>Teaching-Learning and Evaluation *</h2>
-    <table>
-      <tr>
-        <th></th>
-        <th>Excellent</th>
-        <th>Very Good</th>
-        <th>Good</th>
-        <th>Average</th>
-        <th>Below Average</th>
-      </tr>
-      <tr>
-        <td>1)Audiovisual learning resources provided by teachers facilitated you to improve learning.</td>
-        <td><input type="radio" name="Teaching1" value="excellent"></td>
-        <td><input type="radio" name="Teaching1" value="very-good"></td>
-        <td><input type="radio" name="Teaching1" value="good"></td>
-        <td><input type="radio" name="Teaching1" value="average"></td>
-        <td><input type="radio" name="Teaching1" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>2)Reading material and other learning resources provided by teachers facilitated you to improve learning. </td>
-        <td><input type="radio" name="Teaching2" value="excellent"></td>
-        <td><input type="radio" name="Teaching2" value="very-good"></td>
-        <td><input type="radio" name="Teaching2" value="good"></td>
-        <td><input type="radio" name="Teaching2" value="average"></td>
-        <td><input type="radio" name="Teaching2" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>3)Hands-on practice in laboratories and project work facilitated in overall development, inculcating skills and time management. </td>
-        <td><input type="radio" name="Teaching3" value="excellent"></td>
-        <td><input type="radio" name="Teaching3" value="very-good"></td>
-        <td><input type="radio" name="Teaching3" value="good"></td>
-        <td><input type="radio" name="Teaching3" value="average"></td>
-        <td><input type="radio" name="Teaching3" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>4)Academic activities facilitate you to improve experiential learning, participative learning and problem-solving methodology. </td>
-        <td><input type="radio" name="Teaching4" value="excellent"></td>
-        <td><input type="radio" name="Teaching4" value="very-good"></td>
-        <td><input type="radio" name="Teaching4" value="good"></td>
-        <td><input type="radio" name="Teaching4" value="average"></td>
-        <td><input type="radio" name="Teaching4" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>5)Evaluation pattern (Unit Test, Assignment, and Presentation) made you capable of analyzing your strength & weakness, and empowered you to use resources effectively. </td>
-        <td><input type="radio" name="Teaching5" value="excellent"></td>
-        <td><input type="radio" name="Teaching5" value="very-good"></td>
-        <td><input type="radio" name="Teaching5" value="good"></td>
-        <td><input type="radio" name="Teaching5" value="average"></td>
-        <td><input type="radio" name="Teaching5" value="below-average"></td>
-      </tr>
-      <br>
-      <tr>
-        <td>6)The overall experience would help you to engage in independent and life-long learning in the broadest context of technological change. </td>
-        <td><input type="radio" name="Teaching6" value="excellent"></td>
-        <td><input type="radio" name="Teaching6" value="very-good"></td>
-        <td><input type="radio" name="Teaching6" value="good"></td>
-        <td><input type="radio" name="Teaching6" value="average"></td>
-        <td><input type="radio" name="Teaching6" value="below-average"></td>
-      </tr>
-    </table>
+    <?php 
+           include('config.php');
+           $sqlget = "SELECT * FROM addque ORDER BY category, id";
+           $sqldata = mysqli_query($conn,$sqlget) or die("error");
+
+           echo "<table>";
+           echo "<tr>
+           <th>No.</th>
+           <th>Questions</th> 
+           <th>Excellent</th>
+           <th>Very Good</th>
+           <th>Good</th>
+           <th>Average</th>
+           <th>Below Average</th></tr>";
+           $teachingCounter = 1; 
+
+           while($row = mysqli_fetch_array($sqldata, MYSQLI_ASSOC)){
+            $category = $row['category'];
+            // -------------------------------------------------------------//
+            if ($category === 'teaching') {
+           // -------------------------------------------------------------//
+            
+            echo "<tr>";
+            echo "<td>"  .$teachingCounter."</td>";
+            echo "<td>"  .$row['question']."</td>";
+            
+            $radioName = 'teaching' . $row['id'];
+      
+      echo '<td><input type="radio" name="' . $radioName . '" value="excellent"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="very-good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="average"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="below-average"></td>';
+           
+            echo "</tr>";
+            $teachingCounter++;
+           }
+          }
+           echo "</table>";
+         ?>
     <!--#################RESEARCH & EXTENSION ################## -->
     <h2>Research and Extension Activities *</h2>
-    <table>
-      <tr>
-        <th></th>
-        <th>Excellent</th>
-        <th>Very Good</th>
-        <th>Good</th>
-        <th>Average</th>
-        <th>Below Average</th>
-      </tr>
-      <tr>
-        <td>1)Institution has an eco-system to promote research and other initiatives for creationand transfer of knowledge. </td>
-        <td><input type="radio" name="Research1" value="excellent"></td>
-        <td><input type="radio" name="Research1" value="very-good"></td>
-        <td><input type="radio" name="Research1" value="good"></td>
-        <td><input type="radio" name="Research1" value="average"></td>
-        <td><input type="radio" name="Research1" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>2)Institution has adequate facility to carry out research.</td>
-        <td><input type="radio" name="Research2" value="excellent"></td>
-        <td><input type="radio" name="Research2" value="very-good"></td>
-        <td><input type="radio" name="Research2" value="good"></td>
-        <td><input type="radio" name="Research2" value="average"></td>
-        <td><input type="radio" name="Research2" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>3)Workshops/seminars on research methodology, Intellectual Property Rights (IPR), entrepreneurship, skill development are organized regularly. </td>
-        <td><input type="radio" name="Research3" value="excellent"></td>
-        <td><input type="radio" name="Research3" value="very-good"></td>
-        <td><input type="radio" name="Research3" value="good"></td>
-        <td><input type="radio" name="Research3" value="average"></td>
-        <td><input type="radio" name="Research3" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>4)Activities with social relevance (NCC/ NSS/ CHRF/ CHARUSAT Rural Education etc.) are conducted regularly. </td>
-        <td><input type="radio" name="Research4" value="excellent"></td>
-        <td><input type="radio" name="Research4" value="very-good"></td>
-        <td><input type="radio" name="Research4" value="good"></td>
-        <td><input type="radio" name="Research4" value="average"></td>
-        <td><input type="radio" name="Research4" value="below-average"></td>
-      </tr>
-    </table>
+    <?php 
+           include('config.php');
+           $sqlget = "SELECT * FROM addque ORDER BY category, id";
+           $sqldata = mysqli_query($conn,$sqlget) or die("error");
+
+           echo "<table>";
+           echo "<tr>
+           <th>No.</th>
+           <th>Questions</th> 
+           <th>Excellent</th>
+           <th>Very Good</th>
+           <th>Good</th>
+           <th>Average</th>
+           <th>Below Average</th></tr>";
+           $researchCounter = 1;
+
+           while($row = mysqli_fetch_array($sqldata, MYSQLI_ASSOC)){
+            $category = $row['category'];
+              // -------------------------------------------------------------//
+               if ($category === 'research') {
+                // -------------------------------------------------------------//
+            
+            echo "<tr>";
+            echo "<td>"  .$researchCounter."</td>";
+            echo "<td>"  .$row['question']."</td>";
+            
+            $radioName = 'research' . $row['id'];
+      
+      echo '<td><input type="radio" name="' . $radioName . '" value="excellent"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="very-good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="average"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="below-average"></td>';
+           
+            echo "</tr>";
+            $researchCounter++;
+           }
+          }
+           echo "</table>";
+         ?>
     <!--############# INFRASTRUCTURE AND LEARNING ################ -->
     <h2>Infrastructure and Learning Resources *</h2>
-    <table>
-      <tr>
-        <th></th>
-        <th>Excellent</th>
-        <th>Very Good</th>
-        <th>Good</th>
-        <th>Average</th>
-        <th>Below Average</th>
-      </tr>
-      <tr>
-        <td>1)The institute has adequate facilities for Teaching - learning viz. audiovisual amenities, classrooms, laboratories. </td>
-        <td><input type="radio" name="Infrastructure1" value="excellent"></td>
-        <td><input type="radio" name="Infrastructure1" value="very-good"></td>
-        <td><input type="radio" name="Infrastructure1" value="good"></td>
-        <td><input type="radio" name="Infrastructure1" value="average"></td>
-        <td><input type="radio" name="Infrastructure1" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>2)The institute has adequate facilities for Cultural activities, yoga, games (Indoor and outdoor), sports and gymnasium </td>
-        <td><input type="radio" name="Infrastructure2" value="excellent"></td>
-        <td><input type="radio" name="Infrastructure2" value="very-good"></td>
-        <td><input type="radio" name="Infrastructure2" value="good"></td>
-        <td><input type="radio" name="Infrastructure2" value="average"></td>
-        <td><input type="radio" name="Infrastructure2" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>3)The institute has adequate LAN, WiFi and Internet Facility </td>
-        <td><input type="radio" name="Infrastructure3" value="excellent"></td>
-        <td><input type="radio" name="Infrastructure3" value="very-good"></td>
-        <td><input type="radio" name="Infrastructure3" value="good"></td>
-        <td><input type="radio" name="Infrastructure3" value="average"></td>
-        <td><input type="radio" name="Infrastructure3" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>4)The institute has adequate and hygienic canteen and food facilities.</td>
-        <td><input type="radio" name="Infrastructure4" value="excellent"></td>
-        <td><input type="radio" name="Infrastructure4" value="very-good"></td>
-        <td><input type="radio" name="Infrastructure4" value="good"></td>
-        <td><input type="radio" name="Infrastructure4" value="average"></td>
-        <td><input type="radio" name="Infrastructure4" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>5)Campus Ambience (Greenery, Environment friendly eco system, usage of solar lights, saving of electivity, production of electricity, working space) is pleasant. </td>
-        <td><input type="radio" name="Infrastructure5" value="excellent"></td>
-        <td><input type="radio" name="Infrastructure5" value="very-good"></td>
-        <td><input type="radio" name="Infrastructure5" value="good"></td>
-        <td><input type="radio" name="Infrastructure5" value="average"></td>
-        <td><input type="radio" name="Infrastructure5" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>6)Adequate learning resources are available in library. </td>
-        <td><input type="radio" name="Infrastructure6" value="excellent"></td>
-        <td><input type="radio" name="Infrastructure6" value="very-good"></td>
-        <td><input type="radio" name="Infrastructure6" value="good"></td>
-        <td><input type="radio" name="Infrastructure6" value="average"></td>
-        <td><input type="radio" name="Infrastructure6" value="below-average"></td>
-      </tr>
-    </table>
+    <?php 
+           include('config.php');
+           $sqlget ="SELECT * FROM addque ORDER BY category, id";
+           $sqldata = mysqli_query($conn,$sqlget) or die("error");
+
+           echo "<table>";
+           echo "<tr>
+           <th>No.</th>
+           <th>Questions</th> 
+           <th>Excellent</th>
+           <th>Very Good</th>
+           <th>Good</th>
+           <th>Average</th>
+           <th>Below Average</th></tr>";
+           $infrastructureCounter = 1;
+
+           while($row = mysqli_fetch_array($sqldata, MYSQLI_ASSOC)){
+            $category = $row['category'];
+          // -------------------------------------------------------------//
+            if ($category === 'infrastructure') {
+          // -------------------------------------------------------------// 
+            echo "<tr>";
+            echo "<td>"  .$infrastructureCounter."</td>";
+            echo "<td>"  .$row['question']."</td>";
+            
+            $radioName = 'infrastructure' . $row['id'];
+      
+      echo '<td><input type="radio" name="' . $radioName . '" value="excellent"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="very-good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="average"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="below-average"></td>';
+           
+            echo "</tr>";
+            $infrastructureCounter++;
+           }
+          }
+           echo "</table>";
+         ?>
+
     <!--############# STUDENT SUPPORT ################ -->
     <h2>Student Support and Progression *</h2>
-    <table>
-      <tr>
-        <th></th>
-        <th>Excellent</th>
-        <th>Very Good</th>
-        <th>Good</th>
-        <th>Average</th>
-        <th>Below Average</th>
-      </tr>
-      <tr>
-        <td>1)Active student council exists and students are involved in activities for institutional development and student welfare. </td>
-        <td><input type="radio" name="Support1" value="excellent"></td>
-        <td><input type="radio" name="Support1" value="very-good"></td>
-        <td><input type="radio" name="Support1" value="good"></td>
-        <td><input type="radio" name="Support1" value="average"></td>
-        <td><input type="radio" name="Support1" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>2)Institution timely resolves the grievances including sexual harassment and ragging cases.</td>
-        <td><input type="radio" name="Support2" value="excellent"></td>
-        <td><input type="radio" name="Support2" value="very-good"></td>
-        <td><input type="radio" name="Support2" value="good"></td>
-        <td><input type="radio" name="Support2" value="average"></td>
-        <td><input type="radio" name="Support2" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>3)Counseling helped in assessing learning level of students, leading to customized attention to needy students. </td>
-        <td><input type="radio" name="Support3" value="excellent"></td>
-        <td><input type="radio" name="Support3" value="very-good"></td>
-        <td><input type="radio" name="Support3" value="good"></td>
-        <td><input type="radio" name="Support3" value="average"></td>
-        <td><input type="radio" name="Support3" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>4)Institution encourages and provides support to participate in national and international events.</td>
-        <td><input type="radio" name="Support4" value="excellent"></td>
-        <td><input type="radio" name="Support4" value="very-good"></td>
-        <td><input type="radio" name="Support4" value="good"></td>
-        <td><input type="radio" name="Support4" value="average"></td>
-        <td><input type="radio" name="Support4" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>5)Capacity development and skills enhancement activities are organized regularly.</td>
-        <td><input type="radio" name="Support5" value="excellent"></td>
-        <td><input type="radio" name="Support5" value="very-good"></td>
-        <td><input type="radio" name="Support5" value="good"></td>
-        <td><input type="radio" name="Support5" value="average"></td>
-        <td><input type="radio" name="Support6" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>6)Adequate support is provided by Career Development and Placement Cell (CDPC). </td>
-        <td><input type="radio" name="Support6" value="excellent"></td>
-        <td><input type="radio" name="Support6" value="very-good"></td>
-        <td><input type="radio" name="Support6" value="good"></td>
-        <td><input type="radio" name="Support6" value="average"></td>
-        <td><input type="radio" name="Support6" value="below-average"></td>
-      </tr>
-    </table>
+    <?php 
+           include('config.php');
+           $sqlget = "SELECT * FROM addque ORDER BY category, id";
+           $sqldata = mysqli_query($conn,$sqlget) or die("error");
+
+           echo "<table>";
+           echo "<tr>
+           <th>No.</th>
+           <th>Questions</th> 
+           <th>Excellent</th>
+           <th>Very Good</th>
+           <th>Good</th>
+           <th>Average</th>
+           <th>Below Average</th></tr>";
+           $supportCounter = 1; 
+
+           while($row = mysqli_fetch_array($sqldata, MYSQLI_ASSOC)){
+            $category = $row['category'];
+            // -------------------------------------------------------------//
+            if ($category === 'support') {
+            // -------------------------------------------------------------//
+            
+            echo "<tr>";
+            echo "<td>"  . $supportCounter."</td>";
+            echo "<td>"  .$row['question']."</td>";
+            
+            $radioName = 'support' . $row['id'];
+      
+      echo '<td><input type="radio" name="' . $radioName . '" value="excellent"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="very-good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="average"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="below-average"></td>';
+           
+            echo "</tr>";
+            $supportCounter++;
+           }
+          }
+           echo "</table>";
+         ?>
     <!--############# GOVERNANCE AND LEADERSHIP ################ -->
     <h2>Governance and Leadership  *</h2>
-    <table>
-      <tr>
-        <th></th>
-        <th>Excellent</th>
-        <th>Very Good</th>
-        <th>Good</th>
-        <th>Average</th>
-        <th>Below Average</th>
-      </tr>
-      <tr>
-        <td>1)The effective and transparent leadership is reflected in various institutional policies/ practices. </td>
-        <td><input type="radio" name="Governance1" value="excellent"></td>
-        <td><input type="radio" name="Governance1" value="very-good"></td>
-        <td><input type="radio" name="Governance1" value="good"></td>
-        <td><input type="radio" name="Governance1" value="average"></td>
-        <td><input type="radio" name="Governance1" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>2)Management of Institution follows “Equal Opportunity” for all. </td>
-        <td><input type="radio" name="Governance2" value="excellent"></td>
-        <td><input type="radio" name="Governance2" value="very-good"></td>
-        <td><input type="radio" name="Governance2" value="good"></td>
-        <td><input type="radio" name="Governance2" value="average"></td>
-        <td><input type="radio" name="Governance3" value="below-average"></td>
-      </tr>
-      <tr>
-        <td>3)Institute felicitates achievement of students through various modes. </td>
-        <td><input type="radio" name="Governance3" value="excellent"></td>
-        <td><input type="radio" name="Governance3" value="very-good"></td>
-        <td><input type="radio" name="Governance3" value="good"></td>
-        <td><input type="radio" name="Governance3" value="average"></td>
-        <td><input type="radio" name="Governance3" value="below-average"></td>
-      </tr>
-    </table>
+    <?php 
+           include('config.php');
+           $sqlget = "SELECT * FROM addque ORDER BY category, id";
+           $sqldata = mysqli_query($conn,$sqlget) or die("error");
+
+           echo "<table>";
+           echo "<tr>
+           <th>No.</th>
+           <th>Questions</th> 
+           <th>Excellent</th>
+           <th>Very Good</th>
+           <th>Good</th>
+           <th>Average</th>
+           <th>Below Average</th></tr>";
+           $governanceCounter = 1; 
+
+           while($row = mysqli_fetch_array($sqldata, MYSQLI_ASSOC)){
+            $category = $row['category'];
+            // -------------------------------------------------------------//
+            if ($category === 'governance') {
+            // -------------------------------------------------------------//
+
+            echo "<tr>";
+            echo "<td>"  .$governanceCounter."</td>";
+            echo "<td>"  .$row['question']."</td>";
+            
+            $radioName = 'governance' . $row['id'];
+      
+      echo '<td><input type="radio" name="' . $radioName . '" value="excellent"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="very-good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="good"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="average"></td>';
+      echo '<td><input type="radio" name="' . $radioName . '" value="below-average"></td>';
+           
+            echo "</tr>";
+            $governanceCounter++;
+           }
+          }
+           echo "</table>";
+         ?>
+      <!-- ###################### END ############### -->
     <div class="input-group">
       <label class="label" for="remarks">Remarks</label>
       <textarea class="remarks-box" id="remarks" name="remarks" placeholder="Your suggestions are welcome."></textarea>
